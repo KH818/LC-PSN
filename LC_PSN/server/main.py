@@ -4,11 +4,22 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from server.schemas import PredictRequest, PredictResponse
 from server.mock_inference import mock_predict
 from server.websocket_manager import WebSocketManager
-
+from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(
     title="DOA Estimation Inference Server",
     description="FastAPI server for LC-PSN / TransMUSIC DOA estimation",
     version="0.1.0"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 ws_manager = WebSocketManager()
