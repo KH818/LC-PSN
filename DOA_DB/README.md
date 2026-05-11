@@ -102,3 +102,6 @@ DOA_DB/
 ├─ hdf5_storage.py
 ├─ influx_client.py
 └─ main.py
+
+#Notes
+- 현재 구현된 코드는 최종본이 아니며, DB 공부를 통해 최적화 및 팀원 코드에 맞게 수정해 나갈 계획입니다.
