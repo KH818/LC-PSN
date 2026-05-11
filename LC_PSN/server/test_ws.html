@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>DOA WebSocket Test</title>
+</head>
+<body>
+  <h2>DOA WebSocket Test</h2>
+  <p>/docs에서 /predict를 Execute 하면 여기에 결과가 뜹니다.</p>
+  <pre id="log"></pre>
+
+  <script>
+    const log = document.getElementById("log");
+    const ws = new WebSocket("ws://127.0.0.1:8000/ws");
+
+    ws.onopen = () => {
+      log.textContent += "WebSocket connected\n";
+      ws.send("ping");
+    };
+
+    ws.onmessage = (event) => {
+      log.textContent += event.data + "\n\n";
+    };
+
+    ws.onerror = () => {
+      log.textContent += "WebSocket error\n";
+    };
+
+    ws.onclose = () => {
+      log.textContent += "WebSocket disconnected\n";
+    };
+  </script>
+</body>
+</html>
