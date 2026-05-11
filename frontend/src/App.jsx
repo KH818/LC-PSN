@@ -1,5 +1,6 @@
 import "./App.css";
 import { useWebSocket } from "./hooks/useWebSocket";
+import MainLayout from "./component/layout/MainLayout";
 
 function App() {
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
@@ -36,78 +37,15 @@ function App() {
   };
 
   return (
-    <div className="app">
-      <header className="header">
-        <h1>LC-PSN Realtime DOA Dashboard</h1>
-        <p>UI/UX · React · D3.js</p>
-      </header>
-
-      <main className="dashboard">
-        <aside className="sidebar">
-          <section className="panel">
-            <h2>Connection Status</h2>
-
-            <p>
-              <strong>API:</strong> {apiBaseUrl}
-            </p>
-
-            <p>
-              <strong>WebSocket:</strong> {wsUrl}
-            </p>
-
-            <p>
-              <strong>Status:</strong> {status}
-            </p>
-
-            {error && <p className="error">{error}</p>}
-          </section>
-
-          <section className="panel">
-            <h2>Control Panel</h2>
-            <button type="button" onClick={handleStart}>
-              Start
-            </button>
-            <button type="button" onClick={handleStop}>
-              Stop
-            </button>
-          </section>
-        </aside>
-
-        <section className="charts">
-          <div className="chart-card">
-            <h2>Polar Chart</h2>
-            <p>DOA angle visualization area</p>
-          </div>
-
-          <div className="chart-card">
-            <h2>Spectrum Chart</h2>
-            <p>Spectrum line chart area</p>
-          </div>
-
-          <div className="chart-card">
-            <h2>Waterfall Chart</h2>
-            <p>Realtime history visualization area</p>
-          </div>
-
-          <div className="chart-card">
-            <h2>Latest Data</h2>
-            <pre>
-              {message
-                ? JSON.stringify(message, null, 2)
-                : JSON.stringify(
-                    {
-                      azimuth: null,
-                      elevation: null,
-                      confidence: null,
-                    },
-                    null,
-                    2
-                  )}
-            </pre>
-          </div>
-        </section>
-      </main>
-    </div>
+    <MainLayout
+      apiBaseUrl={apiBaseUrl}
+      wsUrl={wsUrl}
+      status={status}
+      error={error}
+      message={message}
+      onStart={handleStart}
+      onStop={handleStop}
+    />
   );
 }
 
