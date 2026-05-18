@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 export function useWebSocket(url) {
   const [status, setStatus] = useState("disconnected");
   const [message, setMessage] = useState(null);
+  const [messageHistory, setMessageHistory] = useState([]);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -16,11 +17,16 @@ export function useWebSocket(url) {
     };
 
     socket.onmessage = (event) => {
+      let nextMessage = event.data;
+
       try {
-        setMessage(JSON.parse(event.data));
+        nextMessage = JSON.parse(event.data);
       } catch {
-        setMessage(event.data);
+        nextMessage = event.data;
       }
+
+      setMessage(nextMessage);
+      setMessageHistory((current) => [...current.slice(-35), nextMessage]);
     };
 
     socket.onerror = () => {
@@ -37,5 +43,5 @@ export function useWebSocket(url) {
     };
   }, [url]);
 
-  return { status, message, error };
+  return { status, message, messageHistory, error };
 }

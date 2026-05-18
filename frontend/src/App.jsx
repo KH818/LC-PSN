@@ -5,7 +5,7 @@ import MainLayout from "./component/layout/MainLayout";
 function App() {
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
   const wsUrl = import.meta.env.VITE_WS_URL;
-  const { status, message, error } = useWebSocket(wsUrl);
+  const { status, message, messageHistory, error } = useWebSocket(wsUrl);
 
   const handleStart = async () => {
     try {
@@ -43,6 +43,7 @@ function App() {
       status={status}
       error={error}
       message={message}
+      messageHistory={messageHistory}
       onStart={handleStart}
       onStop={handleStop}
     />

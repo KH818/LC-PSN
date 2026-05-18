@@ -44,7 +44,7 @@ body {
 .panel,
 .chart-card {
   background: white;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 20px;
   border: 1px solid #e5e7eb;
 }
@@ -62,6 +62,147 @@ body {
 
 .chart-card {
   min-height: 220px;
+}
+
+.chart-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.chart-header h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+.chart-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.metric-pill {
+  flex: 0 0 auto;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 9px;
+}
+
+.polar-frame {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.line-chart,
+.polar-frame svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.chart-grid {
+  fill: none;
+  stroke: #dbe3ed;
+  stroke-width: 1;
+}
+
+.chart-axis,
+.polar-baseline {
+  stroke: #94a3b8;
+  stroke-width: 1.5;
+}
+
+.chart-axis-label,
+.chart-y-label {
+  fill: #64748b;
+  font-size: 11px;
+  text-anchor: middle;
+}
+
+.chart-y-label {
+  text-anchor: end;
+}
+
+.doa-ray {
+  stroke: #e11d48;
+  stroke-linecap: round;
+  stroke-width: 3;
+}
+
+.doa-dot {
+  fill: #e11d48;
+  stroke: white;
+  stroke-width: 2;
+}
+
+.doa-label {
+  fill: #0f172a;
+  font-size: 12px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+.empty-chart-label {
+  fill: #94a3b8;
+  font-size: 14px;
+  text-anchor: middle;
+}
+
+.spectrum-area {
+  fill: rgba(37, 99, 235, 0.12);
+  stroke: none;
+}
+
+.spectrum-line {
+  fill: none;
+  stroke: #2563eb;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
+.waterfall-grid {
+  display: grid;
+  width: 100%;
+  height: 252px;
+  overflow: hidden;
+  border: 1px solid #dbe3ed;
+  border-radius: 6px;
+  background: #edf2f7;
+}
+
+.waterfall-cell {
+  min-width: 0;
+  min-height: 0;
+}
+
+.empty-panel {
+  display: grid;
+  place-items: center;
+  height: 252px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  color: #94a3b8;
+}
+
+.chart-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.chart-footer strong {
+  color: #0f172a;
 }
 
 pre {
@@ -84,4 +225,14 @@ button {
 
 .error {
   color: #dc2626;
+}
+
+@media (max-width: 900px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+
+  .charts {
+    grid-template-columns: 1fr;
+  }
 }

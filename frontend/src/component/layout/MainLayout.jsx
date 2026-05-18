@@ -10,6 +10,7 @@ function MainLayout({
   status,
   error,
   message,
+  messageHistory,
   onStart,
   onStop,
 }) {
@@ -30,7 +31,7 @@ function MainLayout({
         <section className="charts">
           <PolarChart data={message?.data} />
           <SpectrumChart data={message?.data} />
-          <WaterfallChart data={message?.data} />
+          <WaterfallChart data={message?.data} messageHistory={messageHistory} />
 
           <div className="chart-card">
             <h2>Latest Data</h2>
