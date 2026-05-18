@@ -15,7 +15,7 @@ InfluxDB에 저장 및 조회할 수 있도록 구성되어 있습니다.
 - Raw IQ signal 저장 (HDF5)
 - 추론 결과 저장 (InfluxDB)
 - 최근 추론 결과 조회
-- 특정 raw signal 기반 결과 조회
+- 특정 signal 기반 결과 조회
 - 장기 이력 분석용 데이터 조회
 
 FastAPI 기반 REST API 서버로 구현되었으며,  
@@ -45,6 +45,24 @@ InfluxDB가 실시간 조회 및 장기 이력 분석에 더 적합합니다.
 
 ---
 
+# ID Structure
+
+본 프로젝트에서는 raw signal과 inference result를  
+하나의 `id` 기준으로 통합 관리합니다.
+
+Raw signal 업로드 시 UUID 기반 `id`가 생성되며,  
+이 `id`를 기반으로 다음 데이터들이 연결됩니다.
+
+- raw IQ signal (.h5)
+- spectrum (.h5)
+- inference result
+- metadata
+
+즉, 하나의 signal에 대한 모든 데이터를  
+동일한 `id`로 조회할 수 있습니다.
+
+---
+
 # Stored Data
 
 ## 1. Raw Signal Metadata
@@ -53,7 +71,7 @@ measurement: `raw_signal`
 
 저장 정보:
 
-- raw_id
+- id
 - file_path
 - antenna_count
 - snapshot_count
@@ -65,6 +83,11 @@ measurement: `raw_signal`
 Raw IQ signal 자체는 `.h5` 파일로 저장되며,  
 InfluxDB에는 메타데이터만 저장됩니다.
 
+보안 및 용량 문제로 인해  
+raw signal 데이터 자체는 API 응답으로 반환하지 않습니다.
+
+대신 저장된 파일 경로(file_path)만 제공합니다.
+
 ---
 
 ## 2. Inference Result
@@ -73,13 +96,15 @@ measurement: `doa_inference`
 
 저장 정보:
 
-- raw_id
-- result_id
+- id
 - estimated_k
 - doa_angles_deg
 - snr_estimate
 - confidence
+- spectrum_path
 - timestamp
+
+Inference 결과는 raw signal과 동일한 `id`로 연결됩니다.
 
 ---
 
@@ -90,15 +115,26 @@ Raw IQ signal 데이터는 HDF5 포맷으로 저장됩니다.
 HDF5는 대용량 배열 데이터를 효율적으로 저장할 수 있는 포맷으로,  
 추후 재학습(retraining) 데이터셋 구축에도 활용 가능합니다.
 
----
+Spectrum 데이터 역시 별도의 `.h5` 파일로 저장됩니다.
 
-# Project Structure
+예시:
 
 ```text
-DOA_DB/
+raw_storage/
+ └─ 550e8400-e29b-41d4-a716-446655440000.h5
+
+spectrum_storage/
+ └─ 550e8400-e29b-41d4-a716-446655440000_spectrum.h5
+```
+# Project structure
+
+```text
+ DOA_DB/
 ├─ raw_storage/
+├─ spectrum_storage/
 ├─ docker-compose.yml
 ├─ requirements.txt
 ├─ hdf5_storage.py
 ├─ influx_client.py
 └─ main.py
+```
