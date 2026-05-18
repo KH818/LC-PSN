@@ -1,12 +1,13 @@
+import { normalizeInferenceEvent } from "../../utils/inferenceEvent";
 import { getRange, normalizeNumberList } from "./chartUtils";
 
-function WaterfallChart({ data, messageHistory = [] }) {
+function WaterfallChart({ inference, messageHistory = [] }) {
   const maxRows = 36;
   const history = messageHistory
-    .map((message) => normalizeNumberList(message?.data?.spectrum))
+    .map((message) => normalizeNumberList(normalizeInferenceEvent(message).spectrum.values))
     .filter((spectrum) => spectrum.length > 0)
     .slice(-maxRows);
-  const latestSpectrum = normalizeNumberList(data?.spectrum);
+  const latestSpectrum = normalizeNumberList(inference?.spectrum?.values);
   const maxColumns = Math.max(1, ...history.map((row) => row.length), latestSpectrum.length);
   const allValues = history.flat();
   const { min, max } = getRange(allValues);
@@ -20,7 +21,7 @@ function WaterfallChart({ data, messageHistory = [] }) {
   };
 
   return (
-    <div className="chart-card">
+    <div className="chart-card chart-card-wide">
       <div className="chart-header">
         <div>
           <h2>Waterfall</h2>
@@ -61,7 +62,7 @@ function WaterfallChart({ data, messageHistory = [] }) {
 
       <div className="chart-footer">
         <span>Latest confidence</span>
-        <strong>{data?.confidence == null ? "-" : `${Math.round(Number(data.confidence) * 100)}%`}</strong>
+        <strong>{inference?.confidence == null ? "-" : `${Math.round(Number(inference.confidence) * 100)}%`}</strong>
       </div>
     </div>
   );

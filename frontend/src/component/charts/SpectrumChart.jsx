@@ -1,7 +1,8 @@
 import { getRange, normalizeNumberList, scaleValue } from "./chartUtils";
 
-function SpectrumChart({ data }) {
-  const spectrum = normalizeNumberList(data?.spectrum);
+function SpectrumChart({ inference }) {
+  const spectrumMeta = inference?.spectrum ?? {};
+  const spectrum = normalizeNumberList(spectrumMeta.values);
   const width = 560;
   const height = 260;
   const padding = { top: 22, right: 22, bottom: 34, left: 44 };
@@ -21,7 +22,11 @@ function SpectrumChart({ data }) {
       <div className="chart-header">
         <div>
           <h2>Spectrum</h2>
-          <p>Signal strength by angle/bin</p>
+          <p>
+            {spectrum.length > 0
+              ? `${spectrumMeta.gridStart ?? -90} deg to ${spectrumMeta.gridEnd ?? 90} deg`
+              : "Waiting for spectrum"}
+          </p>
         </div>
         <span className="metric-pill">{spectrum.length} bins</span>
       </div>

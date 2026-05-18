@@ -4,6 +4,7 @@ export function useWebSocket(url) {
   const [status, setStatus] = useState("disconnected");
   const [message, setMessage] = useState(null);
   const [messageHistory, setMessageHistory] = useState([]);
+  const [lastMessageAt, setLastMessageAt] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -27,6 +28,7 @@ export function useWebSocket(url) {
 
       setMessage(nextMessage);
       setMessageHistory((current) => [...current.slice(-35), nextMessage]);
+      setLastMessageAt(new Date().toISOString());
     };
 
     socket.onerror = () => {
@@ -43,5 +45,5 @@ export function useWebSocket(url) {
     };
   }, [url]);
 
-  return { status, message, messageHistory, error };
+  return { status, message, messageHistory, lastMessageAt, error };
 }

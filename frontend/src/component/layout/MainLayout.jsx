@@ -3,6 +3,8 @@ import Sidebar from "./Sidebar";
 import PolarChart from "../charts/PolarChart";
 import SpectrumChart from "../charts/SpectrumChart";
 import WaterfallChart from "../charts/WaterfallChart";
+import InferenceSummaryPanel from "../panels/InferenceSummaryPanel";
+import { normalizeInferenceEvent } from "../../utils/inferenceEvent";
 
 function MainLayout({
   apiBaseUrl,
@@ -11,9 +13,12 @@ function MainLayout({
   error,
   message,
   messageHistory,
+  lastMessageAt,
   onStart,
   onStop,
 }) {
+  const inference = normalizeInferenceEvent(message);
+
   return (
     <div className="app">
       <Header />
@@ -24,31 +29,17 @@ function MainLayout({
           wsUrl={wsUrl}
           status={status}
           error={error}
+          messageCount={messageHistory.length}
+          lastMessageAt={lastMessageAt}
           onStart={onStart}
           onStop={onStop}
         />
 
         <section className="charts">
-          <PolarChart data={message?.data} />
-          <SpectrumChart data={message?.data} />
-          <WaterfallChart data={message?.data} messageHistory={messageHistory} />
-
-          <div className="chart-card">
-            <h2>Latest Data</h2>
-            <pre>
-              {message
-                ? JSON.stringify(message, null, 2)
-                : JSON.stringify(
-                    {
-                      azimuth: null,
-                      elevation: null,
-                      confidence: null,
-                    },
-                    null,
-                    2
-                  )}
-            </pre>
-          </div>
+          <InferenceSummaryPanel inference={inference} />
+          <PolarChart inference={inference} />
+          <SpectrumChart inference={inference} />
+          <WaterfallChart inference={inference} messageHistory={messageHistory} />
         </section>
       </main>
     </div>

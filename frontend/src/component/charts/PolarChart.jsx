@@ -1,11 +1,12 @@
-function PolarChart({ data }) {
-  const doas = Array.isArray(data?.doas_deg) ? data.doas_deg : [];
-  const confidence = Number(data?.confidence ?? 0);
+function PolarChart({ inference }) {
+  const doas = inference?.doas ?? [];
+  const confidence = inference?.confidence;
   const width = 320;
   const height = 220;
   const cx = width / 2;
   const cy = 184;
   const radius = 132;
+  const showLabels = doas.length <= 3;
 
   const toPoint = (angleDeg, distance = radius) => {
     const clamped = Math.max(-90, Math.min(90, Number(angleDeg) || 0));
@@ -21,11 +22,11 @@ function PolarChart({ data }) {
   const angleTicks = [-90, -60, -30, 0, 30, 60, 90];
 
   return (
-    <div className="chart-card">
+    <div className="chart-card chart-card-large">
       <div className="chart-header">
         <div>
           <h2>DOA Polar</h2>
-          <p>Estimated arrival angles</p>
+          <p>{doas.length > 0 ? doas.map((angle) => `${Math.round(angle)} deg`).join(" / ") : "Waiting for angles"}</p>
         </div>
         <span className="metric-pill">{doas.length} sources</span>
       </div>
@@ -65,9 +66,11 @@ function PolarChart({ data }) {
               <g key={`${angle}-${index}`}>
                 <line className="doa-ray" x1={cx} y1={cy} x2={point.x} y2={point.y} />
                 <circle className="doa-dot" cx={point.x} cy={point.y} r="6" />
-                <text className="doa-label" x={point.x} y={point.y - 12}>
-                  {Math.round(angle)} deg
-                </text>
+                {showLabels && (
+                  <text className="doa-label" x={point.x} y={point.y - 12}>
+                    {Math.round(angle)} deg
+                  </text>
+                )}
               </g>
             );
           })}

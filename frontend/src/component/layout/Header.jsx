@@ -1,8 +1,11 @@
 function Header() {
   return (
     <header className="header">
-      <h1>LC-PSN Realtime DOA Dashboard</h1>
-      <p>UI/UX · React · D3.js</p>
+      <div>
+        <h1>LC-PSN Realtime DOA Dashboard</h1>
+        <p>Live direction-of-arrival inference monitor</p>
+      </div>
+      <span className="header-badge">React + WebSocket</span>
     </header>
   );
 }
