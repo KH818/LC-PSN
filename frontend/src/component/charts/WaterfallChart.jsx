@@ -3,6 +3,7 @@ import { getRange, normalizeNumberList } from "./chartUtils";
 
 function WaterfallChart({ inference, messageHistory = [] }) {
   const maxRows = 36;
+  // WebSocket message history에서 spectrum만 뽑아 최근 프레임 heatmap으로 사용한다.
   const history = messageHistory
     .map((message) => normalizeNumberList(normalizeInferenceEvent(message).spectrum.values))
     .filter((spectrum) => spectrum.length > 0)
@@ -12,6 +13,7 @@ function WaterfallChart({ inference, messageHistory = [] }) {
   const allValues = history.flat();
   const { min, max } = getRange(allValues);
 
+  // 값이 클수록 따뜻한 색에 가깝게 보이도록 spectrum 값을 색상으로 매핑한다.
   const getHeatColor = (value) => {
     const ratio = max === min ? 0.5 : (value - min) / (max - min);
     const hue = 220 - ratio * 180;

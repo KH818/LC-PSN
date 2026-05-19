@@ -9,6 +9,7 @@ function SpectrumChart({ inference }) {
   const plotWidth = width - padding.left - padding.right;
   const plotHeight = height - padding.top - padding.bottom;
   const { min, max } = getRange(spectrum);
+  // spectrum 값을 SVG polyline 좌표 문자열로 변환한다.
   const points = spectrum.map((value, index) => {
     const x =
       padding.left + (spectrum.length === 1 ? plotWidth / 2 : (index / (spectrum.length - 1)) * plotWidth);

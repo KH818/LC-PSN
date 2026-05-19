@@ -8,6 +8,7 @@ function PolarChart({ inference }) {
   const radius = 132;
   const showLabels = doas.length <= 3;
 
+  // -90~90도 DOA 값을 반원 좌표계의 SVG 좌표로 변환한다.
   const toPoint = (angleDeg, distance = radius) => {
     const clamped = Math.max(-90, Math.min(90, Number(angleDeg) || 0));
     const radians = ((clamped - 90) * Math.PI) / 180;
@@ -66,6 +67,7 @@ function PolarChart({ inference }) {
               <g key={`${angle}-${index}`}>
                 <line className="doa-ray" x1={cx} y1={cy} x2={point.x} y2={point.y} />
                 <circle className="doa-dot" cx={point.x} cy={point.y} r="6" />
+                {/* source가 많을 때 각도 라벨이 서로 겹치므로 소수일 때만 표시한다. */}
                 {showLabels && (
                   <text className="doa-label" x={point.x} y={point.y - 12}>
                     {Math.round(angle)} deg

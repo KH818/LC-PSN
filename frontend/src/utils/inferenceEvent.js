@@ -1,10 +1,12 @@
 function getPayload(event) {
   if (!event || typeof event !== "object") return {};
 
+  // 현재 mock 서버는 { type, data } 구조이고, 향후 이벤트는 바로 payload가 될 수 있다.
   return event.data && typeof event.data === "object" ? event.data : event;
 }
 
 function getSpectrum(payload) {
+  // 현재 mock 서버 형식: data.spectrum = number[]
   if (Array.isArray(payload?.spectrum)) {
     return {
       values: payload.spectrum,
@@ -16,6 +18,7 @@ function getSpectrum(payload) {
 
   const spectrum = payload?.spectrum ?? payload?.output?.spectrum;
 
+  // 졸업작품.md에서 정의한 형식: spectrum.values + grid metadata
   if (Array.isArray(spectrum?.values)) {
     return {
       values: spectrum.values,
@@ -37,6 +40,7 @@ export function normalizeInferenceEvent(event) {
   const payload = getPayload(event);
   const output = payload.output ?? {};
   const spectrum = getSpectrum(payload);
+  // 백엔드 mock 필드명(doas_deg)과 정식 이벤트 필드명(doa_deg)을 모두 지원한다.
   const doas = payload.doa_deg ?? payload.doas_deg ?? output.doa_deg ?? [];
   const peakScores = payload.peak_scores ?? output.peak_scores ?? [];
   const confidence = payload.confidence ?? payload.k_confidence ?? output.k_confidence ?? null;
