@@ -14,9 +14,9 @@ InfluxDB에 저장 및 조회할 수 있도록 구성되어 있습니다.
 
 - Raw IQ signal 저장 (HDF5)
 - 추론 결과 저장 (InfluxDB)
-- 최근 추론 결과 조회
-- 특정 signal 기반 결과 조회
-- 장기 이력 분석용 데이터 조회
+- 최근 추론 결과 조회(1개/여러개 선택 가능)
+- 특정 signal 기반 결과 조회(id를 이용해 검색)
+- 추론 평균 조회 (k_estimate / snr_estimate / confidence 평균)
 
 FastAPI 기반 REST API 서버로 구현되었으며,  
 InfluxDB를 이용하여 time-series 형태의 추론 데이터를 관리합니다.
