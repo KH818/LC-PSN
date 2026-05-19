@@ -1,7 +1,7 @@
 import ConnectionStatusPanel from "../panels/ConnectionStatusPanel";
 import ControlPanel from "../panels/ControlPanel";
 
-function Sidebar({ apiBaseUrl, wsUrl, status, error, messageCount, lastMessageAt, onStart, onStop }) {
+function Sidebar({ apiBaseUrl, wsUrl, status, error, messageCount, lastMessageAt, paused, onStart, onTogglePause }) {
   return (
     <aside className="sidebar">
       <ConnectionStatusPanel
@@ -11,9 +11,10 @@ function Sidebar({ apiBaseUrl, wsUrl, status, error, messageCount, lastMessageAt
         error={error}
         messageCount={messageCount}
         lastMessageAt={lastMessageAt}
+        paused={paused}
       />
 
-      <ControlPanel onStart={onStart} onStop={onStop} />
+      <ControlPanel paused={paused} onStart={onStart} onTogglePause={onTogglePause} />
     </aside>
   );
 }

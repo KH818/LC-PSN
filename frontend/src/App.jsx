@@ -1,3 +1,4 @@
+import { useState } from "react";
 import "./App.css";
 import { useWebSocket } from "./hooks/useWebSocket";
 import MainLayout from "./component/layout/MainLayout";
@@ -5,7 +6,8 @@ import MainLayout from "./component/layout/MainLayout";
 function App() {
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
   const wsUrl = import.meta.env.VITE_WS_URL;
-  const { status, message, messageHistory, lastMessageAt, error } = useWebSocket(wsUrl);
+  const [paused, setPaused] = useState(false);
+  const { status, message, messageHistory, lastMessageAt, error } = useWebSocket(wsUrl, { paused });
 
   const handleStart = async () => {
     try {
@@ -24,8 +26,8 @@ function App() {
     }
   };
 
-  const handleStop = () => {
-    console.log("Stop clicked");
+  const handleTogglePause = () => {
+    setPaused((current) => !current);
   };
 
   return (
@@ -37,8 +39,9 @@ function App() {
       message={message}
       messageHistory={messageHistory}
       lastMessageAt={lastMessageAt}
+      paused={paused}
       onStart={handleStart}
-      onStop={handleStop}
+      onTogglePause={handleTogglePause}
     />
   );
 }

@@ -1,4 +1,4 @@
-function ConnectionStatusPanel({ apiBaseUrl, wsUrl, status, error, messageCount = 0, lastMessageAt }) {
+function ConnectionStatusPanel({ apiBaseUrl, wsUrl, status, error, messageCount = 0, lastMessageAt, paused }) {
   const lastReceivedText = lastMessageAt ? new Date(lastMessageAt).toLocaleTimeString() : "No stream yet";
 
   return (
@@ -18,6 +18,11 @@ function ConnectionStatusPanel({ apiBaseUrl, wsUrl, status, error, messageCount 
       <p>
         <strong>Status</strong>
         <span className="panel-value">{status}</span>
+      </p>
+
+      <p>
+        <strong>Display</strong>
+        <span className="panel-value">{paused ? "paused" : "live"}</span>
       </p>
 
       <p>

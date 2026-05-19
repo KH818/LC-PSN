@@ -1,4 +1,4 @@
-function ControlPanel({ onStart, onStop }) {
+function ControlPanel({ paused, onStart, onTogglePause }) {
   return (
     <section className="panel">
       <h2>Control Panel</h2>
@@ -8,8 +8,8 @@ function ControlPanel({ onStart, onStop }) {
           Check Server
         </button>
 
-        <button type="button" onClick={onStop}>
-          Stop
+        <button type="button" onClick={onTogglePause}>
+          {paused ? "Resume Display" : "Pause Display"}
         </button>
       </div>
     </section>

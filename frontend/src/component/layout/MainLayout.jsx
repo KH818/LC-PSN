@@ -14,8 +14,9 @@ function MainLayout({
   message,
   messageHistory,
   lastMessageAt,
+  paused,
   onStart,
-  onStop,
+  onTogglePause,
 }) {
   // 차트 컴포넌트들이 백엔드 이벤트 구조에 직접 의존하지 않도록 한 번 정규화한다.
   const inference = normalizeInferenceEvent(message);
@@ -32,8 +33,9 @@ function MainLayout({
           error={error}
           messageCount={messageHistory.length}
           lastMessageAt={lastMessageAt}
+          paused={paused}
           onStart={onStart}
-          onStop={onStop}
+          onTogglePause={onTogglePause}
         />
 
         <section className="charts">
