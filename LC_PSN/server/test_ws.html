@@ -19,7 +19,16 @@
     };
 
     ws.onmessage = (event) => {
-      log.textContent += event.data + "\n\n";
+      const msg = JSON.parse(event.data);
+      const data = msg.data;
+
+      log.textContent +=
+        `[${msg.type}] ` +
+        `K=${data.estimated_k}, ` +
+        `DOA=${JSON.stringify(data.doas_deg)}, ` +
+        `confidence=${data.confidence}, ` +
+        `input_shape=${JSON.stringify(data.input_shape || null)}, ` +
+        `sample_index=${data.sample_index ?? "-"}\n`;
     };
 
     ws.onerror = () => {
