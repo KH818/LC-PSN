@@ -1,8 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { normalizeInferenceEvent } from "../utils/inferenceEvent";
 
 const CACHE_KEY = "lcpsn:inference-cache:v1";
 const MAX_HISTORY_LENGTH = 50;
+const MAX_RECONNECT_DELAY_MS = 8000;
+const RENDER_THROTTLE_MS = 500;
 
 function readInferenceCache() {
   try {
@@ -62,6 +64,10 @@ function parseSocketMessage(data) {
   }
 }
 
+function getReconnectDelay(attempt) {
+  return Math.min(1000 * 2 ** Math.max(0, attempt - 1), MAX_RECONNECT_DELAY_MS);
+}
+
 export function useWebSocket(url, { paused = false } = {}) {
   const [initialCache] = useState(readInferenceCache);
   const [status, setStatus] = useState("disconnected");
@@ -70,71 +76,160 @@ export function useWebSocket(url, { paused = false } = {}) {
   const [messageHistory, setMessageHistory] = useState(initialCache.history);
   const [lastMessageAt, setLastMessageAt] = useState(initialCache.lastMessageAt);
   const [error, setError] = useState(null);
+  const [reconnectAttempt, setReconnectAttempt] = useState(0);
 
   const latestRef = useRef(initialCache.latest);
   const historyRef = useRef(initialCache.history);
   const lastMessageAtRef = useRef(initialCache.lastMessageAt);
   const pausedRef = useRef(paused);
+  const pendingRenderRef = useRef(null);
+  const renderTimerRef = useRef(null);
+  const lastRenderAtRef = useRef(0);
+
+  const flushPendingRender = useCallback(() => {
+    const pending = pendingRenderRef.current;
+    if (!pending) return;
+
+    pendingRenderRef.current = null;
+    renderTimerRef.current = null;
+    lastRenderAtRef.current = Date.now();
+    setMessage(pending.message);
+    setMessageHistory(pending.history);
+    setLastMessageAt(pending.lastMessageAt);
+  }, []);
+
+  const scheduleRender = useCallback((nextMessage, nextHistory, receivedAt) => {
+    pendingRenderRef.current = {
+      message: nextMessage,
+      history: nextHistory,
+      lastMessageAt: receivedAt,
+    };
+
+    const elapsed = Date.now() - lastRenderAtRef.current;
+
+    if (elapsed >= RENDER_THROTTLE_MS) {
+      if (renderTimerRef.current) {
+        window.clearTimeout(renderTimerRef.current);
+      }
+
+      flushPendingRender();
+      return;
+    }
+
+    if (!renderTimerRef.current) {
+      renderTimerRef.current = window.setTimeout(flushPendingRender, RENDER_THROTTLE_MS - elapsed);
+    }
+  }, [flushPendingRender]);
 
   useEffect(() => {
     pausedRef.current = paused;
 
     if (!paused) {
+      pendingRenderRef.current = null;
+
+      if (renderTimerRef.current) {
+        window.clearTimeout(renderTimerRef.current);
+        renderTimerRef.current = null;
+      }
+
       setMessage(latestRef.current);
       setMessageHistory(historyRef.current);
       setLastMessageAt(lastMessageAtRef.current);
+      lastRenderAtRef.current = Date.now();
     }
   }, [paused]);
 
   useEffect(() => {
-    if (!url) return;
+    if (!url) return undefined;
 
-    const socket = new WebSocket(url);
+    let socket = null;
+    let reconnectTimerId = null;
+    let closedByEffect = false;
+    let reconnectCount = 0;
 
-    socket.onopen = () => {
-      setStatus("connected");
-      setError(null);
-    };
-
-    socket.onmessage = (event) => {
-      // 백엔드가 JSON 문자열을 보내면 객체로 변환하고, 실패하면 원문 문자열을 유지한다.
-      const nextMessage = parseSocketMessage(event.data);
-      const receivedAt = new Date().toISOString();
-      const nextHistory = appendMessage(historyRef.current, nextMessage);
-
-      latestRef.current = nextMessage;
-      historyRef.current = nextHistory;
-      lastMessageAtRef.current = receivedAt;
-
-      writeInferenceCache({
-        latest: nextMessage,
-        history: nextHistory,
-        lastMessageAt: receivedAt,
-      });
-
-      if (pausedRef.current) {
-        return;
+    const clearReconnectTimer = () => {
+      if (reconnectTimerId) {
+        window.clearTimeout(reconnectTimerId);
+        reconnectTimerId = null;
       }
-
-      // pause 상태가 아니면 최신 메시지를 즉시 화면에 반영한다.
-      setMessage(nextMessage);
-      setMessageHistory(nextHistory);
-      setLastMessageAt(receivedAt);
     };
 
-    socket.onerror = () => {
-      setStatus("error");
-      setError("WebSocket connection error");
+    const scheduleReconnect = () => {
+      if (closedByEffect) return;
+
+      reconnectCount += 1;
+      const delay = getReconnectDelay(reconnectCount);
+
+      setStatus("reconnecting");
+      setReconnectAttempt(reconnectCount);
+      reconnectTimerId = window.setTimeout(() => {
+        connect();
+      }, delay);
     };
 
-    socket.onclose = () => {
-      setStatus("disconnected");
+    const connect = () => {
+      clearReconnectTimer();
+      socket = new WebSocket(url);
+
+      socket.onopen = () => {
+        reconnectCount = 0;
+        setStatus("connected");
+        setReconnectAttempt(0);
+        setError(null);
+      };
+
+      socket.onmessage = (event) => {
+        // 수신과 캐시는 즉시 처리하고, 화면 렌더링만 throttle로 제한한다.
+        const nextMessage = parseSocketMessage(event.data);
+        const receivedAt = new Date().toISOString();
+        const nextHistory = appendMessage(historyRef.current, nextMessage);
+
+        latestRef.current = nextMessage;
+        historyRef.current = nextHistory;
+        lastMessageAtRef.current = receivedAt;
+
+        writeInferenceCache({
+          latest: nextMessage,
+          history: nextHistory,
+          lastMessageAt: receivedAt,
+        });
+
+        if (pausedRef.current) {
+          return;
+        }
+
+        scheduleRender(nextMessage, nextHistory, receivedAt);
+      };
+
+      socket.onerror = () => {
+        setStatus("error");
+        setError("WebSocket connection error");
+      };
+
+      socket.onclose = () => {
+        if (closedByEffect) return;
+
+        setStatus("disconnected");
+        scheduleReconnect();
+      };
     };
+
+    connect();
 
     return () => {
-      socket.close();
-    };
-  }, [url]);
+      closedByEffect = true;
+      clearReconnectTimer();
 
-  return { status, message, messageHistory, lastMessageAt, error };
+      if (renderTimerRef.current) {
+        window.clearTimeout(renderTimerRef.current);
+        renderTimerRef.current = null;
+      }
+
+      if (socket) {
+        socket.close();
+      }
+    };
+  }, [scheduleRender, url]);
+
+  return { status, message, messageHistory, lastMessageAt, reconnectAttempt, error };
 }

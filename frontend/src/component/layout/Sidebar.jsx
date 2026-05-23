@@ -11,6 +11,7 @@ function Sidebar({
   messageCount,
   messageHistory,
   lastMessageAt,
+  reconnectAttempt,
   paused,
   displayMode,
   replayIndex,
@@ -28,6 +29,7 @@ function Sidebar({
         error={error}
         messageCount={messageCount}
         lastMessageAt={lastMessageAt}
+        reconnectAttempt={reconnectAttempt}
         displayMode={displayMode}
       />
 

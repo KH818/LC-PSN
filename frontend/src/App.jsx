@@ -8,7 +8,7 @@ function App() {
   const wsUrl = import.meta.env.VITE_WS_URL;
   const [paused, setPaused] = useState(false);
   const [replayIndex, setReplayIndex] = useState(null);
-  const { status, message, messageHistory, lastMessageAt, error } = useWebSocket(wsUrl, { paused });
+  const { status, message, messageHistory, lastMessageAt, reconnectAttempt, error } = useWebSocket(wsUrl, { paused });
   const replayMessage = replayIndex == null ? null : messageHistory[replayIndex];
   const displayedMessage = replayMessage ?? message;
   const displayedHistory =
@@ -57,6 +57,7 @@ function App() {
       messageHistory={displayedHistory}
       totalMessageCount={messageHistory.length}
       lastMessageAt={lastMessageAt}
+      reconnectAttempt={reconnectAttempt}
       paused={paused}
       displayMode={displayMode}
       replayIndex={replayIndex}

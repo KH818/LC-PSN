@@ -15,6 +15,7 @@ function MainLayout({
   messageHistory,
   totalMessageCount,
   lastMessageAt,
+  reconnectAttempt,
   paused,
   displayMode,
   replayIndex,
@@ -39,6 +40,7 @@ function MainLayout({
           messageCount={totalMessageCount}
           messageHistory={messageHistory}
           lastMessageAt={lastMessageAt}
+          reconnectAttempt={reconnectAttempt}
           paused={paused}
           displayMode={displayMode}
           replayIndex={replayIndex}

@@ -105,6 +105,35 @@ body {
   overflow-wrap: anywhere;
 }
 
+.freshness-badge {
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1;
+  padding: 5px 8px;
+  text-transform: uppercase;
+}
+
+.freshness-fresh {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.freshness-delayed {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.freshness-stale {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.freshness-waiting {
+  background: #e2e8f0;
+  color: #475569;
+}
+
 .controls {
   display: flex;
   gap: 8px;

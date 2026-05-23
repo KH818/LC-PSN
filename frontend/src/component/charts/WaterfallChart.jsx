@@ -1,19 +1,26 @@
 import { normalizeInferenceEvent } from "../../utils/inferenceEvent";
-import { getRange, normalizeNumberList } from "./chartUtils";
+import { downsampleNumberList, getRange, normalizeNumberList } from "./chartUtils";
+
+const MAX_ROWS = 36;
+const MAX_RENDER_COLUMNS = 240;
 
 function WaterfallChart({ inference, messageHistory = [] }) {
-  const maxRows = 36;
-  // WebSocket message history에서 spectrum만 뽑아 최근 프레임 heatmap으로 사용한다.
+  // WebSocket history에서 spectrum만 꺼낸 뒤 화면용 열 개수로 축소해서 heatmap에 사용한다.
   const history = messageHistory
-    .map((message) => normalizeNumberList(normalizeInferenceEvent(message).spectrum.values))
+    .map((message) =>
+      downsampleNumberList(
+        normalizeNumberList(normalizeInferenceEvent(message).spectrum.values),
+        MAX_RENDER_COLUMNS,
+      ),
+    )
     .filter((spectrum) => spectrum.length > 0)
-    .slice(-maxRows);
-  const latestSpectrum = normalizeNumberList(inference?.spectrum?.values);
+    .slice(-MAX_ROWS);
+  const latestSpectrum = downsampleNumberList(normalizeNumberList(inference?.spectrum?.values), MAX_RENDER_COLUMNS);
   const maxColumns = Math.max(1, ...history.map((row) => row.length), latestSpectrum.length);
   const allValues = history.flat();
   const { min, max } = getRange(allValues);
 
-  // 값이 클수록 따뜻한 색에 가깝게 보이도록 spectrum 값을 색상으로 매핑한다.
+  // 값이 클수록 따뜻한 색에 가깝게 보여서 peak 위치를 빠르게 찾을 수 있게 한다.
   const getHeatColor = (value) => {
     const ratio = max === min ? 0.5 : (value - min) / (max - min);
     const hue = 220 - ratio * 180;
@@ -37,13 +44,13 @@ function WaterfallChart({ inference, messageHistory = [] }) {
           className="waterfall-grid"
           style={{
             gridTemplateColumns: `repeat(${maxColumns}, minmax(3px, 1fr))`,
-            gridTemplateRows: `repeat(${maxRows}, 1fr)`,
+            gridTemplateRows: `repeat(${MAX_ROWS}, 1fr)`,
           }}
           role="img"
           aria-label="Waterfall spectrum history heatmap"
         >
-          {Array.from({ length: maxRows }).map((_, rowIndex) => {
-            const row = history[rowIndex - (maxRows - history.length)] ?? [];
+          {Array.from({ length: MAX_ROWS }).map((_, rowIndex) => {
+            const row = history[rowIndex - (MAX_ROWS - history.length)] ?? [];
 
             return Array.from({ length: maxColumns }).map((__, columnIndex) => {
               const value = row[columnIndex];

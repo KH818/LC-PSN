@@ -1,15 +1,18 @@
-import { getRange, normalizeNumberList, scaleValue } from "./chartUtils";
+import { downsampleNumberList, getRange, normalizeNumberList, scaleValue } from "./chartUtils";
+
+const MAX_RENDER_POINTS = 360;
 
 function SpectrumChart({ inference }) {
   const spectrumMeta = inference?.spectrum ?? {};
-  const spectrum = normalizeNumberList(spectrumMeta.values);
+  const rawSpectrum = normalizeNumberList(spectrumMeta.values);
+  const spectrum = downsampleNumberList(rawSpectrum, MAX_RENDER_POINTS);
   const width = 560;
   const height = 260;
   const padding = { top: 22, right: 22, bottom: 34, left: 44 };
   const plotWidth = width - padding.left - padding.right;
   const plotHeight = height - padding.top - padding.bottom;
   const { min, max } = getRange(spectrum);
-  // spectrum 값을 SVG polyline 좌표 문자열로 변환한다.
+  // 화면에 그릴 좌표만 축소해서 원본 캐시는 유지하면서 렌더링 비용을 줄인다.
   const points = spectrum.map((value, index) => {
     const x =
       padding.left + (spectrum.length === 1 ? plotWidth / 2 : (index / (spectrum.length - 1)) * plotWidth);
@@ -24,12 +27,12 @@ function SpectrumChart({ inference }) {
         <div>
           <h2>Spectrum</h2>
           <p>
-            {spectrum.length > 0
+            {rawSpectrum.length > 0
               ? `${spectrumMeta.gridStart ?? -90} deg to ${spectrumMeta.gridEnd ?? 90} deg`
               : "Waiting for spectrum"}
           </p>
         </div>
-        <span className="metric-pill">{spectrum.length} bins</span>
+        <span className="metric-pill">{rawSpectrum.length} bins</span>
       </div>
 
       <svg className="line-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Spectrum line chart">
