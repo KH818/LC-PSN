@@ -326,6 +326,72 @@ button:hover {
   background: #1d4ed8;
 }
 
+button:disabled {
+  background: #cbd5e1;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+.secondary-button {
+  background: #475569;
+}
+
+.secondary-button:hover:not(:disabled) {
+  background: #334155;
+}
+
+.replay-slider {
+  width: 100%;
+  margin-top: 16px;
+  accent-color: #2563eb;
+}
+
+.event-log {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  margin: 16px 0 0;
+  max-height: 280px;
+  overflow: auto;
+  padding: 0;
+}
+
+.event-log-item {
+  display: grid;
+  gap: 3px;
+  border-left: 3px solid #94a3b8;
+  border-radius: 6px;
+  background: #f8fafc;
+  padding: 9px 10px;
+}
+
+.event-log-item strong {
+  color: #172033;
+  font-size: 13px;
+}
+
+.event-log-item span {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.event-frame {
+  font-weight: 750;
+}
+
+.event-notice {
+  border-left-color: #2563eb;
+}
+
+.event-warning {
+  border-left-color: #f59e0b;
+}
+
+.event-critical {
+  border-left-color: #dc2626;
+}
+
 .error {
   display: block;
   color: #dc2626;

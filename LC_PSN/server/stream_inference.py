@@ -67,7 +67,7 @@ class H5StreamInference:
             x = self.get_sample_tensor(self.index)
 
             # 지금은 실제 모델 대신 Mock 결과 사용
-            result = mock_predict()
+            result = mock_predict(frame_index=self.index)
             result["input_file"] = self.h5_path
             result["sample_index"] = self.index
             result["input_shape"] = list(x.shape)

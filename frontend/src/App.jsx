@@ -7,7 +7,13 @@ function App() {
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
   const wsUrl = import.meta.env.VITE_WS_URL;
   const [paused, setPaused] = useState(false);
+  const [replayIndex, setReplayIndex] = useState(null);
   const { status, message, messageHistory, lastMessageAt, error } = useWebSocket(wsUrl, { paused });
+  const replayMessage = replayIndex == null ? null : messageHistory[replayIndex];
+  const displayedMessage = replayMessage ?? message;
+  const displayedHistory =
+    replayIndex == null ? messageHistory : messageHistory.slice(Math.max(0, replayIndex - 35), replayIndex + 1);
+  const displayMode = replayIndex == null ? (paused ? "paused" : "live") : "replay";
 
   const handleStart = async () => {
     try {
@@ -27,7 +33,18 @@ function App() {
   };
 
   const handleTogglePause = () => {
+    setReplayIndex(null);
     setPaused((current) => !current);
+  };
+
+  const handleReplayChange = (index) => {
+    setPaused(true);
+    setReplayIndex(index);
+  };
+
+  const handleReturnLive = () => {
+    setReplayIndex(null);
+    setPaused(false);
   };
 
   return (
@@ -36,12 +53,17 @@ function App() {
       wsUrl={wsUrl}
       status={status}
       error={error}
-      message={message}
-      messageHistory={messageHistory}
+      message={displayedMessage}
+      messageHistory={displayedHistory}
+      totalMessageCount={messageHistory.length}
       lastMessageAt={lastMessageAt}
       paused={paused}
+      displayMode={displayMode}
+      replayIndex={replayIndex}
       onStart={handleStart}
       onTogglePause={handleTogglePause}
+      onReplayChange={handleReplayChange}
+      onReturnLive={handleReturnLive}
     />
   );
 }
