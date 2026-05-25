@@ -1,23 +1,32 @@
-import h5py
+import io
+# import h5py
 import numpy as np
 import torch
 
-
-def load_first_sample_from_h5(file_path: str, use_1bit: bool = True) -> torch.Tensor:
+def npy_complex_to_model_input(file_bytes: bytes, use_1bit: bool = True) -> torch.Tensor:
     """
-    h5 파일에서 첫 번째 X 샘플만 읽어서 LC-PSN 입력 tensor로 변환.
+    .npy 파일 bytes를 읽어서 LC-PSN 입력 tensor로 변환.
 
-    입력 h5:
-      X: [N, M, T] complex
+    입력 .npy:
+      X: [M, T] complex
 
     출력:
       x: [1, 2M, T] float32 torch.Tensor
     """
-    with h5py.File(file_path, "r") as hf:
-        if "X" not in hf:
-            raise ValueError("h5 file must contain dataset 'X'")
+    X_raw = np.load(io.BytesIO(file_bytes))  # [M, T], complex
 
-        X_raw = np.array(hf["X"][0:1])  # [1, M, T], complex
+    if X_raw.ndim != 2:
+        raise ValueError(f"Input npy must have shape [M, T], got {X_raw.shape}")
+
+    if not np.iscomplexobj(X_raw):
+        raise ValueError("Input npy must contain complex values")
+
+    M, T = X_raw.shape
+
+    if M != 8 or T != 200:
+        raise ValueError(f"Expected shape [8, 200], got {X_raw.shape}")
+
+    X_raw = X_raw[None, :, :]  # [1, M, T]
 
     X_processed = np.concatenate(
         [X_raw.real, X_raw.imag],

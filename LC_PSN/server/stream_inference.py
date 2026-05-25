@@ -1,4 +1,4 @@
-# server/stream_inference.py
+# server/stream_inference.py -> .h5 파일로부터 읽는거, 현재 사용 X
 
 import asyncio
 import h5py
