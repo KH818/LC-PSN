@@ -9,35 +9,65 @@
   <p>/docs에서 /predict를 Execute 하면 여기에 결과가 뜹니다.</p>
   <pre id="log"></pre>
 
-  <script>
-    const log = document.getElementById("log");
-    const ws = new WebSocket("ws://127.0.0.1:8000/ws");
+<script>
+  const log = document.getElementById("log");
+  const ws = new WebSocket("ws://127.0.0.1:8000/ws");
 
-    ws.onopen = () => {
-      log.textContent += "WebSocket connected\n";
-      ws.send("ping");
-    };
+  ws.onopen = () => {
+    log.textContent += "WebSocket connected\n";
+    ws.send("ping");
+  };
 
-    ws.onmessage = (event) => {
-      const msg = JSON.parse(event.data);
-      const data = msg.data;
+  ws.onmessage = (event) => {
+    const msg = JSON.parse(event.data);
 
+    if (msg.type === "pong") {
+      log.textContent += JSON.stringify(msg) + "\n";
+      return;
+    }
+
+    const data = msg.data;
+
+    // 새 DOAInferenceEvent 형식
+    if (msg.type === "doa_inference_event") {
+      const output = data.output;
+      const input = data.input;
+      const diagnostics = data.diagnostics;
+
+      log.textContent +=
+        `[${msg.type}] ` +
+        `K=${output.k_estimate}, ` +
+        `DOA=${JSON.stringify(output.doa_deg)}, ` +
+        `confidence=${output.k_confidence?.toFixed(3)}, ` +
+        `input_shape=${JSON.stringify(input.shape)}, ` +
+        `latency_ms=${diagnostics.latency_ms?.toFixed(2)}\n`;
+
+      return;
+    }
+
+    // 예전 Mock 형식도 같이 지원
+    if (msg.type === "inference_result") {
       log.textContent +=
         `[${msg.type}] ` +
         `K=${data.estimated_k}, ` +
         `DOA=${JSON.stringify(data.doas_deg)}, ` +
         `confidence=${data.confidence}, ` +
-        `input_shape=${JSON.stringify(data.input_shape || null)}, ` +
-        `sample_index=${data.sample_index ?? "-"}\n`;
-    };
+        `input_shape=${JSON.stringify(data.input_shape || null)}\n`;
 
-    ws.onerror = () => {
-      log.textContent += "WebSocket error\n";
-    };
+      return;
+    }
 
-    ws.onclose = () => {
-      log.textContent += "WebSocket disconnected\n";
-    };
-  </script>
+    log.textContent += JSON.stringify(msg) + "\n";
+  };
+
+  ws.onerror = () => {
+    log.textContent += "WebSocket error\n";
+  };
+
+  ws.onclose = () => {
+    log.textContent += "WebSocket disconnected\n";
+  };
+</script>
+
 </body>
 </html>
