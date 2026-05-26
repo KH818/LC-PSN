@@ -460,3 +460,277 @@ button:disabled {
     grid-column: auto;
   }
 }
+
+.db-query-panel label {
+  display: block;
+  margin-bottom: 6px;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.query-block {
+  margin-top: 14px;
+}
+
+.query-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.query-row input {
+  min-width: 0;
+  width: 100%;
+  height: 34px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  color: #172033;
+  font-size: 12px;
+  padding: 7px 8px;
+}
+
+.query-row span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.full-button {
+  width: 100%;
+  margin-top: 14px;
+}
+
+.recent-id-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 130px;
+  overflow: auto;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.id-link-button {
+  width: 100%;
+  min-height: 30px;
+  overflow: hidden;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 12px;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.id-link-button:hover {
+  background: #e2e8f0;
+}
+
+.query-results-card {
+  min-height: 260px;
+}
+
+.empty-query-result {
+  display: grid;
+  place-items: center;
+  min-height: 160px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.query-table-wrap {
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid #dbe3ed;
+  border-radius: 6px;
+}
+
+.query-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.query-table th,
+.query-table td {
+  border-bottom: 1px solid #e2e8f0;
+  padding: 9px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.query-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f8fafc;
+  color: #334155;
+  font-weight: 800;
+}
+
+.query-table td {
+  color: #475569;
+  overflow-wrap: anywhere;
+}
+
+.query-table tr:hover td {
+  background: #f8fafc;
+}
+
+.db-query-panel label {
+  display: block;
+  margin-bottom: 6px;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.query-block {
+  margin-top: 14px;
+}
+
+.single-query-input {
+  width: 100%;
+  height: 34px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  color: #172033;
+  font-size: 12px;
+  padding: 7px 8px;
+}
+
+.query-button-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.query-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.query-row input {
+  min-width: 0;
+  width: 100%;
+  height: 34px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  color: #172033;
+  font-size: 12px;
+  padding: 7px 8px;
+}
+
+.query-row span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.recent-id-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 14px;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.recent-id-header small {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.recent-id-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 130px;
+  overflow: auto;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.id-link-button {
+  width: 100%;
+  min-height: 30px;
+  overflow: hidden;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 12px;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.id-link-button:hover {
+  background: #e2e8f0;
+}
+
+.small-muted {
+  margin: 8px 0 0;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.query-results-card {
+  min-height: 260px;
+}
+
+.empty-query-result {
+  display: grid;
+  place-items: center;
+  min-height: 160px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.query-table-wrap {
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid #dbe3ed;
+  border-radius: 6px;
+}
+
+.query-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.query-table th,
+.query-table td {
+  border-bottom: 1px solid #e2e8f0;
+  padding: 9px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.query-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f8fafc;
+  color: #334155;
+  font-weight: 800;
+}
+
+.query-table td {
+  color: #475569;
+  overflow-wrap: anywhere;
+}
+
+.query-table tr:hover td {
+  background: #f8fafc;
+}

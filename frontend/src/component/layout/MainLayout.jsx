@@ -1,9 +1,11 @@
+import { useState } from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import PolarChart from "../charts/PolarChart";
 import SpectrumChart from "../charts/SpectrumChart";
 import WaterfallChart from "../charts/WaterfallChart";
 import InferenceSummaryPanel from "../panels/InferenceSummaryPanel";
+import DBQueryResultsPanel from "../panels/DBQueryResultsPanel";
 import { normalizeInferenceEvent } from "../../utils/inferenceEvent";
 
 function MainLayout({
@@ -24,7 +26,8 @@ function MainLayout({
   onReplayChange,
   onReturnLive,
 }) {
-  // 차트 컴포넌트들이 백엔드 이벤트 구조에 직접 의존하지 않도록 한 번 정규화한다.
+  const [queryResults, setQueryResults] = useState([]);
+
   const inference = normalizeInferenceEvent(message);
 
   return (
@@ -48,6 +51,7 @@ function MainLayout({
           onTogglePause={onTogglePause}
           onReplayChange={onReplayChange}
           onReturnLive={onReturnLive}
+          onQueryResults={setQueryResults}
         />
 
         <section className="charts">
@@ -55,6 +59,7 @@ function MainLayout({
           <PolarChart inference={inference} />
           <SpectrumChart inference={inference} />
           <WaterfallChart inference={inference} messageHistory={messageHistory} />
+          <DBQueryResultsPanel queryResults={queryResults} />
         </section>
       </main>
     </div>

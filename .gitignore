@@ -1,16 +1,102 @@
+# =========================
 # Python
+# =========================
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
+*.pyd
 
-# Raw storage
-DOA_DB/raw_storage/
+# Virtual Environment
+.venv/
+venv/
+env/
 
-# Evaluation outputs
-LC_PSN/eval_outputs_lcpsn/
+# Python build
+build/
+dist/
+*.egg-info/
 
-# Test HDF5 datasets
-LC_PSN/*.h5
-*.h5
+# =========================
+# FastAPI / Logs
+# =========================
+*.log
 
-# Uploads
-uploaded_inputs/
+# =========================
+# HDF5 Storage
+# =========================
+raw_storage/*.h5
+spectrum_storage/*.h5
+
+# keep folders
+!raw_storage/.gitkeep
+!spectrum_storage/.gitkeep
+
+# =========================
+# InfluxDB / Docker
+# =========================
+influxdb-data/
+docker-data/
+*.tar
+
+# Docker override
+docker-compose.override.yml
+
+# =========================
+# Node / React / Vite
+# =========================
+node_modules/
+dist/
+.vite/
+
+# npm / yarn logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =========================
+# VSCode / JetBrains
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Windows
+# =========================
+Thumbs.db
+Desktop.ini
+
+# =========================
+# macOS
+# =========================
+.DS_Store
+
+# =========================
+# Environment Variables
+# =========================
+.env
+.env.*
+
+# =========================
+# Temporary Files
+# =========================
+*.tmp
+*.temp
+
+# =========================
+# Test Outputs
+# =========================
+outputs/
+results/
+cache/
+
+# =========================
+# Coverage
+# =========================
+.coverage
+htmlcov/
+
+# =========================
+# Keep empty folders
+# =========================
+!raw_storage/
+!spectrum_storage/

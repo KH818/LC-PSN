@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+python-multipart
+influxdb-client
+numpy
+h5py
+pydantic
+torch
+requests
+websockets
