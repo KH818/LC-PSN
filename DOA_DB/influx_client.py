@@ -314,3 +314,61 @@ def get_history_summary(hours: int = 24):
             )
 
     return results
+
+#DOA 범위로 추론 결과 조회 함수
+def get_results_by_doa_range(
+    min_doa: float,
+    max_doa: float,
+    limit: int = 100,
+):
+    query = f"""
+    from(bucket: "{INFLUX_BUCKET}")
+      |> range(start: -30d)
+      |> filter(fn: (r) => r._measurement == "doa_inference")
+      |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+      |> sort(columns: ["_time"], desc: true)
+      |> limit(n: {limit})
+    """
+
+    tables = query_api.query(query, org=INFLUX_ORG)
+    results = []
+
+    for table in tables:
+        for record in table.records:
+            result = _record_to_inference_result(record)
+            doa_list = result.get("doa")
+
+            if not isinstance(doa_list, list):
+                continue
+
+            #DOA 중 하나라도 범위 안에 있으면 결과에 포함
+            for doa in doa_list:
+                if min_doa <= float(doa) <= max_doa:
+                    results.append(result)
+                    break
+
+    return results
+
+#K 개수 기준으로 추론 결과 조회 함수
+def get_results_by_min_k(
+    min_k: int,
+    limit: int = 100,
+):
+    query = f"""
+    from(bucket: "{INFLUX_BUCKET}")
+      |> range(start: -30d)
+      |> filter(fn: (r) => r._measurement == "doa_inference")
+      |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+      |> filter(fn: (r) => r.k_estimate >= {min_k})
+      |> sort(columns: ["_time"], desc: true)
+      |> limit(n: {limit})
+    """
+
+    tables = query_api.query(query, org=INFLUX_ORG)
+    results = []
+
+    for table in tables:
+        for record in table.records:
+            results.append(_record_to_inference_result(record))
+
+    return results

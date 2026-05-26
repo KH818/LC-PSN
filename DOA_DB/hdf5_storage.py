@@ -21,7 +21,7 @@ def save_raw_npy_as_hdf5(
     sensor_id: str,
     received_at: Optional[datetime] = None,
 ):
-    X_raw = np.load(io.BytesIO(file_bytes))
+    X_raw = np.load(io.BytesIO(file_bytes)) #numpy 배열 복원
 
     if X_raw.ndim != 2:
         raise ValueError(f"Input npy must have shape [M, T], got {X_raw.shape}")
@@ -38,7 +38,7 @@ def save_raw_npy_as_hdf5(
     file_path = os.path.join(RAW_STORAGE_DIR, f"{raw_data_id}.h5")
 
     with h5py.File(file_path, "w") as hf:
-        hf.create_dataset("X", data=X_raw.astype(np.complex64))
+        hf.create_dataset("X", data=X_raw.astype(np.complex64)) #저장 공간 만들기
 
         hf.attrs["raw_data_id"] = raw_data_id
         hf.attrs["sensor_id"] = sensor_id
