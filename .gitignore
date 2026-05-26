@@ -10,3 +10,7 @@ LC_PSN/eval_outputs_lcpsn/
 
 # Test HDF5 datasets
 LC_PSN/*.h5
+*.h5
+
+# Uploads
+uploaded_inputs/
