@@ -1,9 +1,9 @@
 # DOA_DB
 
-LC-PSN 기반 DOA 추정 시스템을 위한 DB 서버 프로젝트입니다.
+LC-PSN 기반 DOA 추정 시스템을 위한 DB 저장 모듈입니다.
 
-본 프로젝트는 raw IQ signal 데이터를 HDF5 포맷으로 저장하고,  
-LC-PSN 모델이 추론한 결과(DOA angle, estimated K, SNR 등)를  
+본 프로젝트는 모델 서버에서 수신한 raw IQ signal 데이터를 HDF5 포맷으로 저장하고,  
+LC-PSN 모델이 추론한 결과(DOA angle, estimated K, confidence, latency 등)를  
 InfluxDB에 저장 및 조회할 수 있도록 구성되어 있습니다.
 
 ---
@@ -13,13 +13,15 @@ InfluxDB에 저장 및 조회할 수 있도록 구성되어 있습니다.
 본 시스템은 다음 기능을 제공합니다.
 
 - Raw IQ signal 저장 (HDF5)
+- Spectrum 저장 (HDF5)
 - 추론 결과 저장 (InfluxDB)
 - 최근 추론 결과 조회
-- 특정 signal 기반 결과 조회
-- 장기 이력 분석용 데이터 조회
+- 특정 signal id 기반 결과 조회
+- 시간 범위 기반 결과 조회
+- 장기 이력 분석용 요약 조회
 
-FastAPI 기반 REST API 서버로 구현되었으며,  
-InfluxDB를 이용하여 time-series 형태의 추론 데이터를 관리합니다.
+현재 구조에서는 raw signal을 API 응답으로 직접 반환하지 않고,  
+`id`를 기준으로 metadata와 저장 경로를 조회한 뒤 storage에서 raw 데이터를 확인하는 방식으로 사용합니다.
 
 ---
 
@@ -37,8 +39,9 @@ DOA 추론 시스템에서는 다음과 같은 시간 기반 데이터가 지속
 - timestamp
 - DOA angle
 - estimated K
-- SNR estimate
 - confidence
+- latency
+- spectrum metadata
 
 따라서 일반적인 RDB(MySQL 등)보다  
 InfluxDB가 실시간 조회 및 장기 이력 분석에 더 적합합니다.
@@ -50,13 +53,13 @@ InfluxDB가 실시간 조회 및 장기 이력 분석에 더 적합합니다.
 본 프로젝트에서는 raw signal과 inference result를  
 하나의 `id` 기준으로 통합 관리합니다.
 
-Raw signal 업로드 시 UUID 기반 `id`가 생성되며,  
+모델 서버가 `/infer-npy` 요청을 받을 때 UUID 기반 `raw_data_id`를 생성하며,  
 이 `id`를 기반으로 다음 데이터들이 연결됩니다.
 
 - raw IQ signal (.h5)
 - spectrum (.h5)
 - inference result
-- metadata
+- raw metadata
 
 즉, 하나의 signal에 대한 모든 데이터를  
 동일한 `id`로 조회할 수 있습니다.
@@ -72,13 +75,15 @@ measurement: `raw_signal`
 저장 정보:
 
 - id
+- sensor_id
 - file_path
+- raw_format
 - antenna_count
 - snapshot_count
 - sample_rate
 - center_frequency
 - description
-- timestamp
+- input_timestamp
 
 Raw IQ signal 자체는 `.h5` 파일로 저장되며,  
 InfluxDB에는 메타데이터만 저장됩니다.
@@ -86,7 +91,7 @@ InfluxDB에는 메타데이터만 저장됩니다.
 보안 및 용량 문제로 인해  
 raw signal 데이터 자체는 API 응답으로 반환하지 않습니다.
 
-대신 저장된 파일 경로(file_path)만 제공합니다.
+대신 저장된 파일 경로(`file_path`)만 제공합니다.
 
 ---
 
@@ -97,12 +102,15 @@ measurement: `doa_inference`
 저장 정보:
 
 - id
-- estimated_k
-- doa_angles_deg
-- snr_estimate
+- raw_format
+- k_estimate
+- doa
 - confidence
+- latency_ms
+- snr_estimate
 - spectrum_path
-- timestamp
+- input_timestamp
+- output_timestamp
 
 Inference 결과는 raw signal과 동일한 `id`로 연결됩니다.
 
@@ -121,15 +129,18 @@ Spectrum 데이터 역시 별도의 `.h5` 파일로 저장됩니다.
 
 ```text
 raw_storage/
- └─ 550e8400-e29b-41d4-a716-446655440000.h5
+ └─ raw_a1b2c3d4e5f6.h5
 
 spectrum_storage/
- └─ 550e8400-e29b-41d4-a716-446655440000_spectrum.h5
+ └─ raw_a1b2c3d4e5f6_spectrum.h5
 ```
-# Project structure
+
+---
+
+# Project Structure
 
 ```text
- DOA_DB/
+DOA_DB/
 ├─ raw_storage/
 ├─ spectrum_storage/
 ├─ docker-compose.yml
@@ -137,10 +148,61 @@ spectrum_storage/
 ├─ hdf5_storage.py
 ├─ influx_client.py
 └─ main.py
-<<<<<<< HEAD
 ```
-=======
 
-#Notes
-- 현재 구현된 코드는 최종본이 아니며, DB 공부를 통해 최적화 및 팀원 코드에 맞게 수정해 나갈 계획입니다.
->>>>>>> 2d671a006805f46af50925053673e3ad503fa71c
+---
+
+# Main Files
+
+## hdf5_storage.py
+
+HDF5 파일 저장을 담당합니다.
+
+주요 기능:
+
+- `.npy` complex raw signal을 HDF5로 저장
+- 모델 output spectrum을 HDF5로 저장
+
+현재 구조에서는 별도의 h5 파일 업로드 기능은 사용하지 않습니다.
+
+---
+
+## influx_client.py
+
+InfluxDB 저장 및 조회를 담당합니다.
+
+주요 기능:
+
+- raw signal metadata 저장
+- inference result 저장
+- 모델 event 기반 inference result 저장
+- 최근 inference result 조회
+- 특정 id 기반 result 조회
+- 시간 범위 기반 result 조회
+- 최근 raw signal metadata 조회
+- history summary 조회
+
+---
+
+# Query Usage
+
+InfluxDB에 저장된 데이터는 다음 기준으로 조회할 수 있습니다.
+
+- 최근 추론 결과
+- 특정 id의 추론 결과
+- 최근 raw signal metadata
+- 시간 범위 기반 추론 결과
+- 최근 n시간 요약 통계
+
+Raw signal 자체는 API 응답으로 직접 반환하지 않고,  
+조회된 `file_path`를 통해 storage에서 확인합니다.
+
+---
+
+# Notes
+
+- 현재 구조에서는 h5 파일 업로드 기능을 사용하지 않습니다.
+- 모델 서버에서 `.npy` 입력을 받은 뒤 HDF5로 변환 저장합니다.
+- raw signal과 inference result는 동일한 `id`로 연결됩니다.
+- InfluxDB에는 raw signal 자체가 아니라 metadata만 저장합니다.
+- Spectrum은 별도의 HDF5 파일로 저장하고, InfluxDB에는 `spectrum_path`만 저장합니다.

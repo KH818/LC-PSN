@@ -22,6 +22,7 @@ client = InfluxDBClient(
 write_api = client.write_api(write_options=SYNCHRONOUS)
 query_api = client.query_api()
 
+
 #UTC 시간으로 맞춰주는 함수
 def _to_utc_datetime(value: datetime) -> datetime:
     if value.tzinfo is None:
@@ -29,11 +30,13 @@ def _to_utc_datetime(value: datetime) -> datetime:
 
     return value.astimezone(timezone.utc)
 
-#Metadata 저장 함수
+
+#Raw signal metadata 저장 함수
 def save_raw_metadata(
-    id: str,
+    raw_data_id: str,
     file_path: str,
     raw_format: str,
+    sensor_id: str,
     input_timestamp: datetime,
     antenna_count: int,
     snapshot_count: int,
@@ -42,10 +45,11 @@ def save_raw_metadata(
     description: Optional[str] = None,
 ):
     input_time = _to_utc_datetime(input_timestamp)
-#데이터 point 생성 시작
+
     point = (
         Point("raw_signal")
-        .tag("id", id)
+        .tag("id", raw_data_id)
+        .tag("sensor_id", sensor_id)
         .tag("raw_format", raw_format)
         .field("file_path", file_path)
         .field("antenna_count", int(antenna_count))
@@ -65,9 +69,10 @@ def save_raw_metadata(
 
     write_api.write(bucket=INFLUX_BUCKET, org=INFLUX_ORG, record=point)
 
+
 #추론 결과 저장 함수
 def save_inference_result(
-    id: str,
+    raw_data_id: str,
     k_estimate: int,
     doa: List[float],
     raw_format: str,
@@ -76,13 +81,14 @@ def save_inference_result(
     spectrum_path: Optional[str] = None,
     snr_estimate: Optional[float] = None,
     confidence: Optional[float] = None,
+    latency_ms: Optional[float] = None,
 ):
     input_time = _to_utc_datetime(input_timestamp)
     output_time = _to_utc_datetime(output_timestamp)
 
     point = (
         Point("doa_inference")
-        .tag("id", id)
+        .tag("id", raw_data_id)
         .tag("raw_format", raw_format)
         .field("k_estimate", int(k_estimate))
         .field("doa", json.dumps(doa))
@@ -100,7 +106,38 @@ def save_inference_result(
     if confidence is not None:
         point = point.field("confidence", float(confidence))
 
+    if latency_ms is not None:
+        point = point.field("latency_ms", float(latency_ms))
+
     write_api.write(bucket=INFLUX_BUCKET, org=INFLUX_ORG, record=point)
+
+
+#모델 서버 event를 바로 InfluxDB에 저장하는 함수
+def save_inference_result_from_event(
+    event: dict,
+    spectrum_path: Optional[str] = None,
+    raw_format: str = "h5",
+):
+    raw_data_id = event["input"]["raw_data_id"]
+
+    input_timestamp = datetime.fromisoformat(event["server_received_at"])
+    output_timestamp = datetime.fromisoformat(event["inference_finished_at"])
+
+    output = event["output"]
+    diagnostics = event.get("diagnostics", {})
+
+    save_inference_result(
+        raw_data_id=raw_data_id,
+        k_estimate=output["k_estimate"],
+        doa=output["doa_deg"],
+        raw_format=raw_format,
+        input_timestamp=input_timestamp,
+        output_timestamp=output_timestamp,
+        spectrum_path=spectrum_path,
+        confidence=output.get("k_confidence"),
+        latency_ms=diagnostics.get("latency_ms"),
+    )
+
 
 #문자열로 들어온 doa를 배열로 바꿈
 def _parse_doa(value):
@@ -111,6 +148,7 @@ def _parse_doa(value):
         return json.loads(value)
     except Exception:
         return value
+
 
 #InfluxDB 조회 결과를 API 응답 형식으로 바꾸는 함수
 def _record_to_inference_result(record):
@@ -127,7 +165,9 @@ def _record_to_inference_result(record):
         "spectrum_path": v.get("spectrum_path"),
         "snr_estimate": v.get("snr_estimate"),
         "confidence": v.get("confidence"),
+        "latency_ms": v.get("latency_ms"),
     }
+
 
 #최근 결과 조회 함수
 def get_latest_inference_result():
@@ -148,7 +188,8 @@ def get_latest_inference_result():
 
     return None
 
-#여러 결과 조회 함수: 기본적으로 20개 조회/ 사용자 요청 개수 만큼 조회
+
+#여러 결과 조회 함수
 def get_recent_inference_results(limit: int = 20):
     query = f"""
     from(bucket: "{INFLUX_BUCKET}")
@@ -168,13 +209,14 @@ def get_recent_inference_results(limit: int = 20):
 
     return results
 
+
 #특정 id 에 해당하는 추론 결과 조회 함수
-def get_results_by_id(id: str):
+def get_results_by_id(raw_data_id: str):
     query = f"""
     from(bucket: "{INFLUX_BUCKET}")
       |> range(start: -30d)
       |> filter(fn: (r) => r._measurement == "doa_inference")
-      |> filter(fn: (r) => r.id == "{id}")
+      |> filter(fn: (r) => r.id == "{raw_data_id}")
       |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
       |> sort(columns: ["_time"], desc: true)
     """
@@ -187,6 +229,7 @@ def get_results_by_id(id: str):
             results.append(_record_to_inference_result(record))
 
     return results
+
 
 #시간 범위로 추론 결과 조회 함수
 def get_results_by_time_range(start: str = "-24h", stop: Optional[str] = None):
@@ -209,6 +252,7 @@ def get_results_by_time_range(start: str = "-24h", stop: Optional[str] = None):
 
     return results
 
+
 #최근 raw signal 메타데이터 조회 함수(raw signal 자체 X)
 def get_raw_signals(limit: int = 20):
     query = f"""
@@ -230,6 +274,7 @@ def get_raw_signals(limit: int = 20):
                 {
                     "time": str(v.get("_time")),
                     "id": v.get("id"),
+                    "sensor_id": v.get("sensor_id"),
                     "raw_format": v.get("raw_format"),
                     "input_timestamp": v.get("input_timestamp"),
                     "file_path": v.get("file_path"),
@@ -243,13 +288,14 @@ def get_raw_signals(limit: int = 20):
 
     return results
 
+
 #최근 n 시간에 대한 요약 통계 조회
 def get_history_summary(hours: int = 24):
     query = f"""
     from(bucket: "{INFLUX_BUCKET}")
       |> range(start: -{hours}h)
       |> filter(fn: (r) => r._measurement == "doa_inference")
-      |> filter(fn: (r) => r._field == "k_estimate" or r._field == "snr_estimate" or r._field == "confidence")
+      |> filter(fn: (r) => r._field == "k_estimate" or r._field == "snr_estimate" or r._field == "confidence" or r._field == "latency_ms")
       |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
     """
 
