@@ -15,16 +15,10 @@ InfluxDB에 저장 및 조회할 수 있도록 구성되어 있습니다.
 - Raw IQ signal 저장 (HDF5)
 - Spectrum 저장 (HDF5)
 - 추론 결과 저장 (InfluxDB)
-<<<<<<< HEAD
 - 최근 추론 결과 조회
 - 특정 signal id 기반 결과 조회
 - 시간 범위 기반 결과 조회
 - 장기 이력 분석용 요약 조회
-=======
-- 최근 추론 결과 조회(1개/여러개 선택 가능)
-- 특정 signal 기반 결과 조회(id를 이용해 검색)
-- 추론 평균 조회 (k_estimate / snr_estimate / confidence 평균)
->>>>>>> 65ae9770e225d8134a7fe2c8345de5b34f0c8031
 
 현재 구조에서는 raw signal을 API 응답으로 직접 반환하지 않고,  
 `id`를 기준으로 metadata와 저장 경로를 조회한 뒤 storage에서 raw 데이터를 확인하는 방식으로 사용합니다.
