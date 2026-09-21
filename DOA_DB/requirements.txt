@@ -1,7 +1,0 @@
-fastapi
-uvicorn
-python-multipart
-influxdb-client
-numpy
-h5py
-pydantic
