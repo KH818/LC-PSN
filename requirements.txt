@@ -1,0 +1,6 @@
+numpy>=2.0,<3
+h5py>=3.10,<4
+matplotlib>=3.8,<4
+scipy>=1.12,<2
+thop>=0.1.1
+tqdm>=4.66,<5

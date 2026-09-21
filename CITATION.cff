@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the associated paper."
+title: "LCPSN: Uncertainty-Weighted Learnable Covariance Refinement for One-Bit DOA Estimation"
+type: software
+authors:
+  - family-names: Kwon
+    given-names: Hyuk
+  - family-names: Jeon
+    given-names: Hanasol
+  - family-names: Cho
+    given-names: Youngin
+  - family-names: Kim
+    given-names: Gyungmok
+  - family-names: Hwang
+    given-names: Ho Young
+date-released: 2026-09-18

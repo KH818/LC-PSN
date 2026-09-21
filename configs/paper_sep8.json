@@ -1,0 +1,26 @@
+{
+  "array": {"sensors": 8, "spacing_wavelength": 0.5},
+  "sources": {"counts": [2, 3, 4, 5], "min_separation_deg": 8.0, "distribution": "uniform(-90, 90)"},
+  "train": {
+    "snapshots": 200,
+    "snr_db": [0, 5, 10, 15, 20],
+    "num_train": 256000,
+    "num_validation": 25600,
+    "data_seed": 1234,
+    "validation_seed": 4321,
+    "training_seeds": [0, 1, 2],
+    "epochs": 100,
+    "lcpsn_batch_size": 128,
+    "baseline_batch_size": 64
+  },
+  "evaluation": {
+    "test_scenes_per_point": 25600,
+    "base_seed": 2026,
+    "snr_sweep_db": [-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20],
+    "snr_sweep_snapshots": 200,
+    "snapshot_sweep": [50, 100, 200, 300, 400, 600, 800, 1000],
+    "snapshot_sweep_snr_db": 10,
+    "paper_plot_snr_floor_db": 0
+  },
+  "lcpsn": {"lambda_uncov_on": 0.001, "lambda_uncov_off": 0.0, "decode_min_separation_deg": 2.0}
+}

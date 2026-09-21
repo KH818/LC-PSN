@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.DS_Store
+data/generated/
+results/retrained/
+results/training_logs/
+evaluation/results/smoke_*.csv
+evaluation/results/reproduced_*.csv
+*.log
