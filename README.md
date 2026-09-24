@@ -4,6 +4,10 @@ This repository is the public-code layout for the paper **“Uncertainty-Weighte
 
 The paper experiment uses an 8-element half-wavelength ULA, 200 training snapshots, source count K in {2,3,4,5}, a minimum 8-degree source separation, and training SNRs {0,5,10,15,20} dB. Learned results are averaged over training seeds 0, 1, and 2.
 
+## Paper
+
+Read the full research paper: **[LCPSN paper (PDF)](lcpsn/LCPSN.pdf)**.
+
 ## Repository map
 
 - `lcpsn/`: LCPSN model, arcsine covariance recovery, uncertainty approximation, loss, data generation, and training.
